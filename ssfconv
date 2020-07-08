@@ -62,7 +62,7 @@ def extractSsf(ssf_file_path, dest_dir):
             content = data[offset+8+name_len:offset+8+name_len+content_len]
 
             # 写入文件
-            open(dest_dir.rstrip('/')+os.sep+filename, 'wb').write(content)
+            open(dest_dir.rstrip(os.sep)+os.sep+filename, 'wb').write(content)
 
     else:
         
@@ -148,15 +148,37 @@ def rgbDistMax(color, *colors):
             max_d_color = c
     return max_d_color
 
+default_menu_img_path = os.path.dirname(os.path.realpath(__file__)) + os.sep + 'menu.png'
+default_radio_img_path = os.path.dirname(os.path.realpath(__file__)) + os.sep + 'radio.png'
+
+        
+# 获取图片大小的函数
+def getImageSize(image_file):
+    assert image_file
+    size = Image.open(image_file).size
+    assert size[0] > 0 and size[0] < 65536 and \
+           size[1] > 0 and size[1] < 65536
+    return size
+
+# 保存一个多边形到 png 文件里
+def savePolygon(size, points, color, out_file):
+    img = Image.new('RGBA', size)
+    draw = ImageDraw.Draw(img)
+    draw.polygon(points, fill = color)
+    img.save(out_file)
+
+
+
 def ssr2fcitx(skin_dir):
     """
+        转换为 fcitx 格式
         将解压后的 ssf 皮肤，在里面创建出 fcitx_skin.conf
     """
     
-    skin_dir = skin_dir.rstrip('/')
+    skin_dir = skin_dir.rstrip(os.sep)
     
     # 确保 skin.ini 文件的存在
-    skin_ini = skin_dir + '/skin.ini'
+    skin_ini = skin_dir + os.sep + 'skin.ini'
     if not os.path.isfile(skin_ini):
         sys.stderr.write('找不到 skin.ini\n')
         return 1
@@ -174,7 +196,7 @@ def ssr2fcitx(skin_dir):
         sys.stderr.write('读取 skin.ini 失败\n')
         return 2
     
-    # 建立 fcitx_skin.conf 的对象
+    # 建立 conf 的对象
     skin = CaseSensitiveConfigParser(allow_no_value = True)
     
     skin['SkinInfo'] = {
@@ -205,17 +227,9 @@ def ssr2fcitx(skin_dir):
             image_name_list = ssf[section][key].split(',')
             if index < len(image_name_list):
                 image_name = image_name_list[index]
-                if os.path.isfile(skin_dir + '/' + image_name):
+                if os.path.isfile(skin_dir + os.sep + image_name):
                     return image_name
         return ''
-        
-    # 获取图片大小的函数
-    def getImageSize(image):
-        assert image
-        size = Image.open(skin_dir + '/' + image).size
-        assert size[0] > 0 and size[0] < 65536 and \
-               size[1] > 0 and size[1] < 65536
-        return size
     
     # 尝试获取值的函数
     def tryGetValue(section, key):
@@ -251,7 +265,7 @@ def ssr2fcitx(skin_dir):
             #if int(h[0]) != 0 or int(v[0]) != 0:
             #    continue
             
-            return getImageAvg(skin_dir + '/' + image_name,
+            return getImageAvg(skin_dir + os.sep + image_name,
                         (int(h[1]),
                          -int(h[2]),
                          int(v[1]),
@@ -308,7 +322,7 @@ def ssr2fcitx(skin_dir):
     # 求图标的前景色（任意一个即可）
     for image in icons:
         if image:
-            icon_color = getImageAvg(skin_dir + '/' + image)
+            icon_color = getImageAvg(skin_dir + os.sep + image)
             break
     else:
         icon_color = other_color
@@ -363,31 +377,31 @@ def ssr2fcitx(skin_dir):
     
     # 创建中文拼音状态图 pinyin.png
     if cn_status_image:
-        symlinkF(cn_status_image, skin_dir + '/pinyin.png')
+        symlinkF(cn_status_image, skin_dir + os.sep + 'pinyin.png')
     
     # 创建全/半角状态图 fullwidth_active.png / fullwidth_inactive.png
     if quan_status_image:
-        symlinkF(quan_status_image, skin_dir + '/fullwidth_active.png')
+        symlinkF(quan_status_image, skin_dir + os.sep + 'fullwidth_active.png')
     if ban_status_image:
-        symlinkF(ban_status_image, skin_dir + '/fullwidth_inactive.png')
+        symlinkF(ban_status_image, skin_dir + os.sep + 'fullwidth_inactive.png')
     
     # 创建中/英文标点状态图 punc_active.png / punc_inactive.png
     if cn_p_status_image:
-        symlinkF(cn_p_status_image, skin_dir + '/punc_active.png')
+        symlinkF(cn_p_status_image, skin_dir + os.sep + 'punc_active.png')
     if en_p_status_image:
-        symlinkF(en_p_status_image, skin_dir + '/punc_inactive.png')
+        symlinkF(en_p_status_image, skin_dir + os.sep + 'punc_inactive.png')
     
     # 创建繁/简状态图 chttrans_inactive.png / chttrans_active.png
     if simp_status_image:
-        symlinkF(simp_status_image, skin_dir + '/chttrans_inactive.png')
+        symlinkF(simp_status_image, skin_dir + os.sep + 'chttrans_inactive.png')
     if trad_status_image:
-        symlinkF(trad_status_image, skin_dir + '/chttrans_active.png')
+        symlinkF(trad_status_image, skin_dir + os.sep + 'chttrans_active.png')
     
     # 创建虚拟键盘状态图 vk_inactive.png / vk_active.png
     if vk_inactive_status_image:
-        symlinkF(vk_inactive_status_image, skin_dir + '/vk_inactive.png')
+        symlinkF(vk_inactive_status_image, skin_dir + os.sep + 'vk_inactive.png')
     if vk_active_status_image:
-        symlinkF(vk_active_status_image, skin_dir + '/vk_active.png')
+        symlinkF(vk_active_status_image, skin_dir + os.sep + 'vk_active.png')
     
     # 求搜狗状态栏上几个按钮的坐标的最值
     x_min = y_min = 65536
@@ -414,7 +428,7 @@ def ssr2fcitx(skin_dir):
         # 得到图标尺寸
         icon_image = getImageConfig('StatusBar', button, 0)
         if not icon_image: continue
-        size = getImageSize(icon_image)
+        size = getImageSize(skin_dir + os.sep + cicon_image)
         
         # 取最右值
         x = int(pos[0]) + size[0]
@@ -425,7 +439,7 @@ def ssr2fcitx(skin_dir):
     
     # 得出合适的右边距和下边距
     if static_bar_image:
-        size = getImageSize(static_bar_image)
+        size = getImageSize(skin_dir + os.sep + static_bar_image)
         MarginRight = size[0] - x_max + 4
         MarginBottom = size[1] - y_max + 4
     else:
@@ -508,18 +522,11 @@ def ssr2fcitx(skin_dir):
     
     # 输入框背景图
     input_bar_image = getImageConfig('Scheme_H1', 'pic')
-    input_bar_image_size = getImageSize(input_bar_image)
-    
-    # 保存一个多边形到 6x12 的 png 文件里
-    def savePolygon_6_12(points, color, out_file):
-        img = Image.new('RGBA', (6,12))
-        draw = ImageDraw.Draw(img)
-        draw.polygon(points, fill = color)
-        img.save(out_file)
+    input_bar_image_size = getImageSize(skin_dir + os.sep + input_bar_image)
         
     # 绘制 prev.png 和 next.png 颜色为 '%d %d %d' % other_color
-    savePolygon_6_12(((0,0),(6,6),(0,12)), other_color, skin_dir + '/next.png')
-    savePolygon_6_12(((0,6),(6,0),(6,12)), other_color, skin_dir + '/prev.png')
+    savePolygon((6,12), ((0,0),(6,6),(0,12)), other_color, skin_dir + os.sep + 'next.png')
+    savePolygon((6,12), ((0,6),(6,0),(6,12)), other_color, skin_dir + os.sep + 'prev.png')
     
     # 水平边距
     lh = tryGetValue('Scheme_H1', 'layout_horizontal')
@@ -634,9 +641,9 @@ def ssr2fcitx(skin_dir):
     
     # 使用系统默认的 active.png 和 inactive.png
     symlinkF('/usr/share/fcitx/skin/default/active.png',
-               skin_dir + '/active.png')
+               skin_dir + os.sep + 'active.png')
     symlinkF('/usr/share/fcitx/skin/default/inactive.png',
-               skin_dir + '/inactive.png')
+               skin_dir + os.sep + 'inactive.png')
     
     skin['SkinTrayIcon'] = {
         # 活动输入法图标
@@ -646,8 +653,8 @@ def ssr2fcitx(skin_dir):
         'Inactive': 'inactive.png',
     }
     
-    # 以系统 dark 的 menu.png 为模板，用背景色构建出本主题的 menu.png
-    img = Image.open('/usr/share/fcitx/skin/dark/menu.png')
+    # 用纯背景色构建出本主题的 menu.png
+    img = Image.open(default_menu_img_path)
     a = np.array(img)
     for i in range(len(a)): 
         for j in range(len(a[0])):
@@ -656,7 +663,7 @@ def ssr2fcitx(skin_dir):
                 a[i][j][1] = back_color[1]
                 a[i][j][2] = back_color[2]
     img = Image.fromarray(a)
-    img.save(skin_dir + '/menu.png')
+    img.save(skin_dir + os.sep + 'menu.png')
 
     skin['SkinMenu'] = {
         # 背景图片
@@ -689,8 +696,453 @@ def ssr2fcitx(skin_dir):
         #'KeyColor': '%d %d %d' % first_color,
     }
     
-    skin.write(open(skin_dir + '/fcitx_skin.conf', 'w', encoding="utf-8"), False)
+    skin.write(open(skin_dir + os.sep + 'fcitx_skin.conf', 'w', encoding="utf-8"), False)
 
+def ssr2fcitx5(skin_dir):
+    """
+        转换为 fcitx5 格式
+        将解压后的 ssf 皮肤，在里面创建出 theme.conf
+    """
+    
+    skin_dir = skin_dir.rstrip(os.sep)
+    
+    # 确保 skin.ini 文件的存在
+    skin_ini = skin_dir + os.sep + 'skin.ini'
+    if not os.path.isfile(skin_ini):
+        sys.stderr.write('找不到 skin.ini\n')
+        return 1
+    
+    # 为了使其区分大小写，重载 ConfigParser
+    class CaseSensitiveConfigParser(configparser.ConfigParser):
+        def optionxform(self, optionstr):
+            return optionstr
+    
+    # 读取 skin.ini 文件
+    try:
+        ssf = CaseSensitiveConfigParser(allow_no_value = True)
+        ssf.read(skin_ini, encoding = 'utf-16')
+    except:
+        sys.stderr.write('读取 skin.ini 失败\n')
+        return 2
+    
+    # 建立 conf 的对象
+    skin = CaseSensitiveConfigParser(allow_no_value = True)
+    
+    skin['Metadata'] = {
+        # 皮肤名称
+        'Name': ssf['General']['skin_name'],
+        
+        # 皮肤版本
+        'Version': ssf['General']['skin_version'],
+        
+        # 皮肤作者
+        'Author': ssf['General']['skin_author'],
+        
+        # 描述
+        'Description': ssf['General']['skin_info'],
+
+        # 用 DPI 缩放
+        'ScaleWithDPI': 'False',
+    }
+    
+    # 将 skin.ini 的颜色转换成 (r,g,b) 三元组
+    def colorConv(ssf_color):
+        color_int = int(ssf_color, 16)
+        r = color_int % 256
+        g = (color_int % 65536) // 256
+        b = color_int // 65536
+        return (r, g, b)
+
+    # 获取图片文件名的函数（获取失败则返回空字符串）
+    def getImageConfig(section, key, index = 0):
+        if key in ssf[section]:
+            image_name_list = ssf[section][key].split(',')
+            if index < len(image_name_list):
+                image_name = image_name_list[index]
+                if os.path.isfile(skin_dir + os.sep + image_name):
+                    return image_name
+        return ''
+    
+    # 尝试获取值的函数
+    def tryGetValue(section, key):
+        if key in ssf[section]:
+            return ssf[section][key].strip()
+        return ''
+        
+    # 根据里面所有的图片，根据所设置的拉伸区域确定合适的背景色
+    def findBackgroundColor():
+        for key in (('Scheme_V1','pic'),
+                    ('Scheme_V2','pinyin_pic'),
+                    ('Scheme_V2','zhongwen_pic'),
+                    ('Scheme_H1','pic'),
+                    ('Scheme_H2','pinyin_pic'),
+                    ('Scheme_H2','zhongwen_pic'),
+                    ):
+            # 排除不存在的键值
+            image_name = getImageConfig(key[0], key[1])
+            if not image_name : continue
+            
+            # 排除区域不存在
+            h_str = tryGetValue(key[0], key[1][:-3] + 'layout_horizontal')
+            if not h_str : continue
+            v_str = tryGetValue(key[0], key[1][:-3] + 'layout_vertical')
+            if not v_str : continue
+            
+            # 得出区域
+            h = h_str.split(',')
+            v = v_str.split(',')
+            if len(h) != 3 or len(v) != 3: continue
+            
+            # 排除平铺模式（筛选出是拉伸区域）
+            #if int(h[0]) != 0 or int(v[0]) != 0:
+            #    continue
+            
+            return getImageAvg(skin_dir + os.sep + image_name,
+                        (int(h[1]),
+                         -int(h[2]),
+                         int(v[1]),
+                         -int(v[2])))
+        else:
+            return (0, 0, 0)
+    
+    # 输入框输入的拼音颜色
+    input_color = colorConv(ssf['Display']['pinyin_color'])
+    
+    # 列表中第一个词的颜色
+    first_color = colorConv(ssf['Display']['zhongwen_first_color'])
+    
+    # 列表中其他词的颜色
+    other_color = colorConv(ssf['Display']['zhongwen_color'])
+    
+    # 根据里面所有的图片，根据所设置的拉伸区域确定合适的背景色
+    back_color = findBackgroundColor()
+    
+    # 字体大小（像素）
+    font_size = int(ssf['Display']['font_size'])
+    
+    skin['InputPanel'] = {
+        # 字体及其大小
+        'Font': 'Sans %d' % font_size,
+
+        # 非选中候选字颜色
+        'NormalColor': '#%02x%02x%02x' % other_color,
+
+        # 选中候选字颜色
+        'HighlightCandidateColor': '#%02x%02x%02x' % first_color,
+
+        # 高亮前景颜色(输入字符颜色)
+        'HighlightColor': '#%02x%02x%02x' % input_color,
+
+        # 输入字符背景颜色
+        'HighlightBackgroundColor': '#%02x%02x%02x' % back_color,
+        
+        #
+        'Spacing': 3,
+    }
+
+    # 输入框背景图
+    input_bar_image = getImageConfig('Scheme_H1', 'pic')
+    input_bar_image_size = getImageSize(skin_dir + os.sep + input_bar_image)
+
+    # 水平拉升区域
+    lh = tryGetValue('Scheme_H1', 'layout_horizontal')
+    if lh:
+        lh = tuple(map(lambda s:int(s), lh.split(',')))
+    else:
+        lh = (0, 2, 2)
+
+    # 垂直拉升区域
+    lv = tryGetValue('Scheme_H1', 'layout_vertical')
+    if lv:
+        lv = tuple(map(lambda s:int(s), lv.split(',')))
+    else:
+        lv = (0, 2, 2)
+
+    # 拼音边距
+    pinyin_marge = tryGetValue('Scheme_H1', 'pinyin_marge')
+    if pinyin_marge:
+        pinyin_marge = tuple(map(lambda s:int(s), pinyin_marge.split(',')))
+    else:
+        assert False
+
+    # 候选词边距
+    zhongwen_marge = tryGetValue('Scheme_H1', 'zhongwen_marge')
+    if zhongwen_marge:
+        zhongwen_marge = tuple(map(lambda s:int(s), zhongwen_marge.split(',')))
+    else:
+        assert False
+
+    # 分隔符长度
+    sep = 1 if tryGetValue('Scheme_H1', 'separator') else 0
+
+    # 恒等式：
+    #   输入的拼音下方到候选词上方的距离：
+    #     pinyin_marge[1] + sep + zhongwen_marge[0] = TextMargin.Bottom + TextMargin.Top
+    #   输入的拼音上方到上方边界的距离：
+    #     pinyin_marge[0] = ContentMargin.Top + TextMargin.Top
+    #   候选词下方到下方边界的距离：
+    #     zhongwen_marge[1] = ContentMargin.Bottom + TextMargin.Bottom
+    #
+    #
+    #   这是四元一次方程组，由于只有三个方程，那么随便确定其中一个即可解得其它未知数。
+    #     增加的方程：
+    #       TextMargin.Bottom = (pinyin_marge[1] + sep + zhongwen_marge[0]) // 2
+
+    distant_pinyin_zhongwen = pinyin_marge[1] + sep + zhongwen_marge[0]
+
+    # 解得：
+    TextMargin_Bottom = distant_pinyin_zhongwen // 2
+    TextMargin_Top = distant_pinyin_zhongwen - TextMargin_Bottom
+    ContentMargin_Top = pinyin_marge[0] - TextMargin_Top
+    #ContentMargin_Bottom = zhongwen_marge[1] - TextMargin_Bottom
+    ContentMargin_Bottom = input_bar_image_size[1] - \
+            ContentMargin_Top - TextMargin_Top - font_size - TextMargin_Bottom - \
+            TextMargin_Top - font_size - TextMargin_Bottom
+
+    TextMargin_Top_Left = 5
+    TextMargin_Top_Right = 5
+
+    # 文字边距
+    skin['InputPanel/TextMargin'] = {
+        'Left': TextMargin_Top_Left,
+        'Right': TextMargin_Top_Right,
+        'Top': TextMargin_Top,
+        'Bottom': TextMargin_Bottom,
+    }
+
+    # 输入框内容边距
+    skin['InputPanel/ContentMargin'] = {
+        'Left': max(pinyin_marge[2], zhongwen_marge[2]) - TextMargin_Top_Left,
+        'Right': max(pinyin_marge[3], zhongwen_marge[3]) - TextMargin_Top_Right,
+        'Top': ContentMargin_Top,
+        'Bottom': ContentMargin_Bottom,
+    }
+
+    # 输入框背景图
+    skin['InputPanel/Background'] = {
+        'Image': input_bar_image,
+    }
+
+    # 输入框背景图的拉升区域
+    skin['InputPanel/Background/Margin'] = {
+        'Left': lh[1],
+        'Right': lh[2],
+        'Top': lv[1],
+        'Bottom': lv[2],
+    }
+
+
+    # 绘制高亮的纯色图片
+    menu_highlight_color = rgbDistMax(first_color, input_color, other_color, back_color)
+    Image.new('RGBA', (38,23), menu_highlight_color).save(skin_dir + os.sep + 'highlight.png')
+
+    # 高亮背景
+    skin['InputPanel/Highlight'] = {
+        'Image': 'highlight.png',
+    }
+    # 高亮背景边距
+    skin['InputPanel/Highlight/Margin'] = {
+        'Left': 5,
+        'Right': 5,
+        'Top': 5,
+        'Bottom': 5,
+    }
+
+        
+    # 绘制 prev.png 和 next.png 颜色为 '%d %d %d' % other_color
+    savePolygon((16,24), ((5,6),(5,18),(11,12)), other_color, skin_dir + os.sep + 'next.png')
+    savePolygon((16,24), ((11,6),(11,18),(5,12)), other_color, skin_dir + os.sep + 'prev.png')
+
+
+    # 前一页的箭头
+    skin['InputPanel/PrevPage'] = {
+        'Image': 'prev.png',
+    }
+    skin['InputPanel/PrevPage/ClickMargin'] = {
+        'Left': 5,
+        'Right': 5,
+        'Top': 4,
+        'Bottom': 4,
+    }
+    # 后一页的箭头
+    skin['InputPanel/NextPage'] = {
+        'Image': 'next.png',
+    }
+    skin['InputPanel/NextPage/ClickMargin'] = {
+        'Left': 5,
+        'Right': 5,
+        'Top': 4,
+        'Bottom': 4,
+    }
+
+    # 竖排合窗口设置
+    Scheme_V1_pic = tryGetValue('Scheme_V1', 'pic')
+
+    # 水平拉升区域
+    lh = tryGetValue('Scheme_V1', 'layout_horizontal')
+    if lh:
+        lh = tuple(map(lambda s:int(s), lh.split(',')))
+    else:
+        lh = None
+
+    # 垂直拉升区域
+    lv = tryGetValue('Scheme_V1', 'layout_vertical')
+    if lv:
+        lv = tuple(map(lambda s:int(s), lv.split(',')))
+    else:
+        lv = None
+
+    # 拼音边距
+    pinyin_marge = tryGetValue('Scheme_V1', 'pinyin_marge')
+    if pinyin_marge:
+        pinyin_marge = tuple(map(lambda s:int(s), pinyin_marge.split(',')))
+    else:
+        pinyin_marge = None
+
+    # 候选词边距
+    zhongwen_marge = tryGetValue('Scheme_V1', 'zhongwen_marge')
+    if zhongwen_marge:
+        zhongwen_marge = tuple(map(lambda s:int(s), zhongwen_marge.split(',')))
+    else:
+        zhongwen_marge = None
+
+    if Scheme_V1_pic and lh and lv and pinyin_marge and zhongwen_marge:
+        # 背景图片
+        skin['Menu/Background'] = {
+            'Image': Scheme_V1_pic,
+        }
+
+        # 背景图片拉升边距
+        skin['Menu/Background/Margin'] = {
+            'Left': lh[1],
+            'Right': lh[2],
+            'Top': lv[1],
+            'Bottom': lv[2],
+        }
+
+        sep = 1 if tryGetValue('Scheme_V1', 'separator') else 0
+
+        # 背景图片内容边距
+        horizontal_margin = min(zhongwen_marge[2], zhongwen_marge[3])
+        skin['Menu/ContentMargin'] = {
+            # 左边距
+            'Left': horizontal_margin,
+
+            # 右边距
+            'Right': horizontal_margin,
+
+            # 上边距
+            'Top': pinyin_marge[0] + pinyin_marge[1] + sep + zhongwen_marge[0],
+
+            # 下边距
+            'Bottom': zhongwen_marge[1],
+        }
+    else:
+        # 构建纯色背景
+
+        # 用纯背景色构建出本主题的 menu.png
+        img = Image.open(default_menu_img_path)
+        a = np.array(img)
+        for i in range(len(a)): 
+            for j in range(len(a[0])):
+                if a[i][j][3]: 
+                    a[i][j][0] = back_color[0]
+                    a[i][j][1] = back_color[1]
+                    a[i][j][2] = back_color[2]
+        img = Image.fromarray(a)
+        img.save(skin_dir + os.sep + 'menu.png')
+
+        # 背景图片
+        skin['Menu/Background'] = {
+            'Image': 'menu.png',
+        }
+
+        # 背景图片拉升边距
+        skin['Menu/Background/Margin'] = {
+            'Left': 20,
+            'Right': 20,
+            'Top': 20,
+            'Bottom': 20,
+        }
+
+        # 背景图片内容边距
+        skin['Menu/ContentMargin'] = {
+            # 左边距
+            'Left': 8,
+            
+            # 右边距
+            'Right': 8,
+
+            # 上边距
+            'Top': 8,
+            
+            # 下边距
+            'Bottom': 8,
+        }
+
+    # 绘制高亮的纯色图片
+    menu_highlight_color = rgbDistMax((255,255,255), back_color, input_color, first_color, other_color)
+    Image.new('RGBA', (38,23), menu_highlight_color).save(skin_dir + os.sep + 'menu_highlight.png')
+
+    # 高亮背景
+    skin['Menu/Highlight'] = {
+        'Image': 'menu_highlight.png',
+    }
+    # 高亮背景边距
+    skin['Menu/Highlight/Margin'] = {
+        'Left': 10,
+        'Right': 10,
+        'Top': 5,
+        'Bottom': 5,
+    }
+
+    # 分隔符颜色
+    skin['Menu/Separator'] = {
+        'Color': '#%02x%02x%02x' % other_color,
+    }
+
+    # 用纯背景色构建出本主题的 radio.png
+    img = Image.open(default_radio_img_path)
+    a = np.array(img)
+    for i in range(len(a)): 
+        for j in range(len(a[0])):
+            if a[i][j][3]: 
+                a[i][j][0] = other_color[0]
+                a[i][j][1] = other_color[1]
+                a[i][j][2] = other_color[2]
+    img = Image.fromarray(a)
+    img.save(skin_dir + os.sep + 'radio.png')
+
+    # 复选框图片
+    skin['Menu/CheckBox'] = {
+        'Image': 'radio.png',
+    }
+
+    # 绘制箭头图片
+    savePolygon((6,12), ((0,0),(6,6),(0,12)), other_color, skin_dir + os.sep + 'arrow.png')
+
+    # 箭头图片
+    skin['Menu/SubMenu'] = {
+        'Image': 'arrow.png',
+    }
+
+    # 菜单文字项边距
+    skin['Menu/TextMargin'] = {
+        # 左边距
+        'Left': 5,
+        
+        # 右边距
+        'Right': 5,
+
+        # 上边距
+        'Top': 5,
+        
+        # 下边距
+        'Bottom': 5,
+    }
+
+    skin.write(open(skin_dir + os.sep + 'theme.conf', 'w', encoding="utf-8"), False)
+    return 0
 
 def main(args):
     
@@ -709,22 +1161,31 @@ def main(args):
         extractSsf(args.src, dest_dir)
         
         skin_dir = dest_dir
-    else:
+    elif os.path.isdir(args.src):
         skin_dir = args.src
+    else:
+        sys.stderr.write('找不到 %s\n' % args.src)
+        return 1
     
+    result = 255
     if args.type == 'fcitx':
-        ssr2fcitx(skin_dir)
+        result = ssr2fcitx(skin_dir)
+    elif args.type == 'fcitx5':
+        result = ssr2fcitx5(skin_dir)
     elif args.type == 'zip':
         file_list = os.listdir(skin_dir)
         with zipfile.ZipFile(args.dest, 'w') as zf:
             for file in file_list:
                 zf.write(skin_dir + os.sep + file, file)
+        result = 0
     elif args.type == 'encrypted':
         assert False
         # TODO 还没实现转换成加密的 ssf
     
     if tmp_dir:
         shutil.rmtree(tmp_dir)
+
+    return result
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = \
@@ -735,7 +1196,7 @@ if __name__ == '__main__':
         help = 'The type of destination path file (folder).' + \
             'The default is fcitx.',
         default = 'fcitx',
-        choices = ['fcitx', 'dir', 'encrypted', 'zip'])
+        choices = ['fcitx', 'fcitx5', 'dir', 'encrypted', 'zip'])
     args = parser.parse_args()
     
     exit(main(args))
