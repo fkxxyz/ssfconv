@@ -429,7 +429,7 @@ def ssr2fcitx(skin_dir):
         # 得到图标尺寸
         icon_image = getImageConfig('StatusBar', button, 0)
         if not icon_image: continue
-        size = getImageSize(skin_dir + os.sep + cicon_image)
+        size = getImageSize(skin_dir + os.sep + icon_image)
         
         # 取最右值
         x = int(pos[0]) + size[0]
