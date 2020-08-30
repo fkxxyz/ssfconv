@@ -27,6 +27,14 @@ https://www.fkxxyz.com/d/ssfconv/
 
 下面直接举例吧。
 
+在 archlinux 或 manjaro 下，可以在 aur 中直接安装 ssfconv
+
+```shell
+yay -S ssfconv
+```
+
+对于其它发行版下，请按照下面方法逐步安装。
+
 ### 下载此仓库
 
 ```shell
