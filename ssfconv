@@ -113,9 +113,17 @@ def getImageAvg(image_path, area = (0, 0, 0, 0)):
     a = np.asarray(image)
     r = g = b = 0
     count = 0
-    for y in range(y1, y2):
-        for x in range(x1, x2):
-            if a[y][x][3] > 0:
+    if a.shape[2] == 4:
+        for y in range(y1, y2):
+            for x in range(x1, x2):
+                if a[y][x][3] > 0:
+                    r += a[y][x][0]
+                    g += a[y][x][1]
+                    b += a[y][x][2]
+                    count += 1
+    else:
+        for y in range(y1, y2):
+            for x in range(x1, x2):
                 r += a[y][x][0]
                 g += a[y][x][1]
                 b += a[y][x][2]
@@ -170,7 +178,7 @@ def savePolygon(size, points, color, out_file):
 
 
 
-def ssr2fcitx(skin_dir):
+def ssf2fcitx(skin_dir):
     """
         转换为 fcitx 格式
         将解压后的 ssf 皮肤，在里面创建出 fcitx_skin.conf
@@ -699,7 +707,7 @@ def ssr2fcitx(skin_dir):
     
     skin.write(open(skin_dir + os.sep + 'fcitx_skin.conf', 'w', encoding="utf-8"), False)
 
-def ssr2fcitx5(skin_dir):
+def ssf2fcitx5(skin_dir):
     """
         转换为 fcitx5 格式
         将解压后的 ssf 皮肤，在里面创建出 theme.conf
@@ -1170,9 +1178,9 @@ def main(args):
     
     result = 255
     if args.type == 'fcitx':
-        result = ssr2fcitx(skin_dir)
+        result = ssf2fcitx(skin_dir)
     elif args.type == 'fcitx5':
-        result = ssr2fcitx5(skin_dir)
+        result = ssf2fcitx5(skin_dir)
     elif args.type == 'zip':
         file_list = os.listdir(skin_dir)
         with zipfile.ZipFile(args.dest, 'w') as zf:
@@ -1203,5 +1211,5 @@ if __name__ == '__main__':
     exit(main(args))
     
     extractSsf(sys.argv[1], sys.argv[2])
-    ssr2fcitx(sys.argv[2])
+    ssf2fcitx(sys.argv[2])
 
